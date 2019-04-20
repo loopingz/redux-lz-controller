@@ -1,0 +1,13 @@
+{
+  "name": "redux-controller",
+  "version": "1.0.0",
+  "description": "Controller that regroup Action and Reducer with helpers",
+  "main": "lib/controller.js",
+  "repository": "https://github.com/loopingz/redux-controller",
+  "author": "rcattiau@loopingz.com",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.8.6",
+    "redux": "^4.0.1"
+  }
+}
