@@ -10,6 +10,11 @@ class TestController extends Controller {
     super("test", {});
   }
 
+  init() {
+    super.init();
+    return false;
+  }
+
   localState() {
     return this.getLocalState();
   }
@@ -22,13 +27,45 @@ class TestController extends Controller {
     this.asyncAction(
       "TEST_ASYNC",
       async () => {
-        await this.ajax("/Test", "GET");
+        await this.ajax("/TestEmpty", "GET");
       },
       () => {}
     );
   }
 
-  onTEST_ACTION() {}
+  launchActionError() {
+    this.asyncAction(
+      "TEST_ASYNC",
+      async () => {
+        await this.ajax("/TestError", "GET");
+      },
+      () => {}
+    );
+  }
+
+  launchActionRedirect() {
+    this.asyncAction(
+      "TEST_ASYNC",
+      async () => {
+        await this.ajax("/TestRedirect", "GET");
+      },
+      () => {}
+    );
+  }
+
+  launchActionOk() {
+    this.asyncAction(
+      "TEST_ASYNC",
+      async () => {
+        await this.ajax("/TestOk", "GET");
+      },
+      () => {}
+    );
+  }
+
+  onTEST_ACTION() {
+    this.setInitialized();
+  }
 
   onTEST_ASYNC_SUCCESS() {}
 
@@ -45,11 +82,30 @@ class Test2Controller extends Controller {
     return this.getLocalState();
   }
 
-  afterTEST_ACTION() {}
+  launchAction() {
+    Controller.dispatch({ type: "TEST_ACTION" });
+  }
+
+  launchAsyncAction() {
+    this.asyncAction(
+      "TEST_ASYNC",
+      async () => {
+        await this.ajax("/TestOk", "GET");
+      },
+      () => {}
+    );
+  }
 
   afterTEST_ASYNC_SUCCESS() {}
 }
 let test2Controller = new Test2Controller();
+
+fetchMock.mock("http://localhost:18080/TestEmpty", 204);
+fetchMock.mock("http://localhost:18080/TestOk", {
+  newAttr: "attr"
+});
+fetchMock.mock("http://localhost:18080/TestRedirect", 302);
+fetchMock.mock("http://localhost:18080/TestError", 401);
 
 @suite
 class ReduxControllerTest {
@@ -59,14 +115,25 @@ class ReduxControllerTest {
     this.store = Redux.createStore(Controller.getReducers(), Redux.applyMiddleware(thunk));
     Controller.setStore(this.store);
     assert.equal(Controller.getStore(), this.store);
-    fetchMock.mock("http://localhost:18080/TestEmpty", 204);
-    fetchMock.mock("http://localhost:18080/TestOk", 200);
   }
 
   @test
-  ajax() {
+  async ajax() {
     Controller.setEndpoint("http://localhost:18080");
-    testController.launchAction();
+    testController.launchActionEmpty();
+    testController.launchActionError();
+    testController.launchActionOk();
+    testController.launchActionRedirect();
+    let promise = testController.waitInit();
+    // check prommise is pending
+    test2Controller.launchAction();
+    await promise;
+    await testController.waitInit();
+  }
+
+  @test
+  undefinedReducer() {
+    test2Controller.launchAsyncAction();
   }
 
   @test
