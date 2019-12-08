@@ -7,13 +7,7 @@ class SynchronizerAction {
   controller: string;
   mergeMode: string;
 
-  constructor(
-    controller: Controller,
-    type: string,
-    id: string,
-    params: any,
-    mergeMode: string = "extend"
-  ) {
+  constructor(controller: Controller, type: string, id: string, params: any, mergeMode: string = "extend") {
     this.params = params;
     this.id = id;
     this.type = type;
@@ -166,9 +160,7 @@ export default class Controller {
   public static getReducers(): Redux.Reducer {
     let mapper = {};
     for (let i in Controller.controllers) {
-      mapper[Controller.controllers[i].getId()] = Controller.controllers[
-        i
-      ].getReducer();
+      mapper[Controller.controllers[i].getId()] = Controller.controllers[i].getReducer();
     }
     return Redux.combineReducers(mapper);
   }
@@ -179,13 +171,11 @@ export default class Controller {
    * Registering the listeners
    */
   protected init() {
-    let names = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(
-      prop => {
-        return prop.startsWith("after");
-      }
-    );
+    let names = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(prop => {
+      return prop.startsWith("after");
+    });
     if (!names.length) {
-      return;
+      return true;
     }
     if (!Controller.hasListener) {
       Controller.getStore().subscribe(Controller._actionListener);
@@ -232,6 +222,7 @@ export default class Controller {
       if (!res) {
         return state;
       }
+      return res;
     }
     return state;
   }
@@ -294,11 +285,7 @@ export default class Controller {
    * @param action any additional informations you want to pass
    * @param postActions callback to execute after the action
    */
-  protected asyncAction(
-    name: string,
-    action: any,
-    postActions: (...args) => void = undefined
-  ) {
+  protected asyncAction(name: string, action: any, postActions: (...args) => void = undefined) {
     Controller.dispatch(async (dispatch, getState) => {
       let requestName = this.getRequestActionName(name);
       if (!this["on" + requestName]) {
@@ -362,18 +349,24 @@ export default class Controller {
       "content-type": "application/json"
     };
     options.method = method;
-    return fetch(endpoint + url, options).then(response => {
-      if (response.status >= 400) {
-        throw new HTTPError(response.status);
-      }
-      if (response.status === 204) {
-        return {};
-      }
-      if (response.status === 200) {
-        return response.json();
-      }
-      return response;
-    });
+    return this.processResponse(await fetch(endpoint + url, options));
+  }
+
+  /**
+   * Parse response
+   * @param response to parse
+   */
+  processResponse(response: Response): any {
+    if (response.status >= 400) {
+      throw new HTTPError(response.status);
+    }
+    if (response.status === 204) {
+      return {};
+    }
+    if (response.status === 200) {
+      return response.json();
+    }
+    return response;
   }
 }
 

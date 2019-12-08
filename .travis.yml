@@ -1,0 +1,21 @@
+language: node_js
+addons:
+  sonarcloud:
+    organization: loopingz-github
+node_js:
+- '10'
+script:
+- npm run test
+after_success:
+- sonar-scanner
+before_deploy:
+- npm run build
+deploy:
+  provider: npm
+  email: rcattiau@loopingz.com
+  skip_cleanup: true
+  tag: next
+  on:
+    tags: true
+  api_key:
+    secure: R4nQilc9nzs8l+ySahffLYxNz32TwIJxoUw9ly/+jGWYCcmte5VuAgDW4V0qYDaoVk9xtAG/MU70T9TLZRh3/YLGg3dddFe3DfHM+L4Qu1RAoIDNskrHu+j22BVrq1GhoyuQ8uwAQ1MvavhcUjf7lby6zj/NnJzGNi/tQI8ucNx9GDJLq6/322CTj4nmHOg01I9g/izqngNRyYqZLEmyXlwZeglFd/rWtoCOGOm/wTbJmRnlaYTNXUKJoT5yGrWihN1+JL9AoxgCMZg/TZ51VFAMHsTlRIyG3EmmKktir8erf3ECfPvgwE5A6W2ca6U79b7yUHvPxUn62u7hWVgetBvseIoSAc2ZhPRDKD0veff+OJck5+GNfjJBDuF4NKMm8lcrRL0zZBwNi8nA+wbCrQWMCxYE57Gmt2p6ceM2ahpWn5pbpNFY2V4w7lf4HIUumbP47UEVBb++/ylkdUpvLO92pi7/CwJ2LEzLMb3B0sdeh6lfQVsFc/MATVX2Pnf8gTyIHNrmFJ2kGq3nFw/wyO/yb6mFAwl5VgCrwrFVe7H/QJk9FdBQNt7QFHlDi1FuVU80VbX5IqppyZD6iOGn4F0Fiv1DtgseuHRVjxvFtDtxarwBYoAJ55hvklf0WiWNXo0lO42sb/mBCte+XE3F3O7aAdN/5nuyzELMK6Plvyg=
