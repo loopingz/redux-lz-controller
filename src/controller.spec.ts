@@ -69,13 +69,13 @@ class TestController extends Controller {
 
   onTEST_ASYNC_SUCCESS() {}
 
-  onTEST_ASYNC_FAILURE() {}
+  onTEST_ASYNC_FAILED() {}
 }
 let testController = new TestController();
 
 class Test2Controller extends Controller {
   constructor() {
-    super("listeners", {});
+    super("listeners");
   }
 
   localState() {
@@ -87,13 +87,15 @@ class Test2Controller extends Controller {
   }
 
   launchAsyncAction() {
-    this.asyncAction(
-      "TEST_ASYNC",
-      async () => {
-        await this.ajax("/TestOk", "GET");
-      },
-      () => {}
-    );
+    this.asyncAction("TEST_ASYNC", async () => {
+      await this.ajax("/TestOk");
+    });
+  }
+
+  launchAsyncActionFailure() {
+    this.asyncAction("TEST_ASYNC", async () => {
+      await this.ajax("/TestError");
+    });
   }
 
   afterTEST_ASYNC_SUCCESS() {}
@@ -134,6 +136,7 @@ class ReduxControllerTest {
   @test
   undefinedReducer() {
     test2Controller.launchAsyncAction();
+    test2Controller.launchAsyncActionFailure();
   }
 
   @test
