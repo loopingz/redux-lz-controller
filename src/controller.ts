@@ -247,7 +247,7 @@ export default class Controller {
     Controller.dispatch(async (dispatch, getState) => {
       let requestName = this.getRequestActionName(name);
       if (!this["on" + requestName]) {
-        this["on" + requestName] = (state, action) => {
+        this["on" + requestName] = state => {
           let obj = { ...state };
           obj._async[requestName] = { syncing: true };
           return obj;
@@ -258,8 +258,8 @@ export default class Controller {
         let successName = this.getSuccessActionName(name);
         let result = await action(dispatch, getState);
         if (!this["on" + successName]) {
-          this["on" + successName] = (state, action) => {
-            let obj = { ...state, ...action.result };
+          this["on" + successName] = (state, actionInfo) => {
+            let obj = { ...state, ...actionInfo.result };
             obj._async[requestName] = { syncing: false };
             return obj;
           };
@@ -268,9 +268,9 @@ export default class Controller {
       } catch (err) {
         let errorName = this.getErrorActionName(name);
         if (!this["on" + errorName]) {
-          this["on" + errorName] = (state, action) => {
+          this["on" + errorName] = (state, actionInfo) => {
             let obj = { ...state };
-            obj._async[requestName] = { syncing: false, error: action.error };
+            obj._async[requestName] = { syncing: false, error: actionInfo.error };
             return obj;
           };
         }
