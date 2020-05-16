@@ -2,7 +2,7 @@
   "name": "redux-lz-controller",
   "version": "1.0.0",
   "description": "Controller that regroup Action and Reducer with helpers",
-  "main": "lib/controller.js",
+  "main": "lib/index.js",
   "repository": "https://github.com/loopingz/redux-lz-controller",
   "author": "rcattiau@loopingz.com",
   "license": "MIT",

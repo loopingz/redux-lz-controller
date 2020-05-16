@@ -1,6 +1,6 @@
 import * as Redux from "redux";
 
-class HTTPError {
+export class HTTPError {
   code: number;
   constructor(code: number) {
     this.code = code;
@@ -34,7 +34,7 @@ export default class Controller {
    */
   protected setInitialized(): void {
     this._init = true;
-    this._initPromises.forEach(res => res());
+    this._initPromises.forEach((res) => res());
   }
 
   /**
@@ -44,7 +44,7 @@ export default class Controller {
     if (this._init) {
       return;
     }
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this._initPromises.push(resolve);
     });
   }
@@ -52,8 +52,8 @@ export default class Controller {
   /**
    * @param id get controller singleton
    */
-  public static get(id: string) {
-    return Controller.controllers[id];
+  public static get<T>(id: string): T {
+    return <T>Controller.controllers[id];
   }
 
   /**
@@ -115,12 +115,32 @@ export default class Controller {
   /**
    * Get all reduucers
    */
-  public static getReducers(): Redux.Reducer {
+  public static getReducers(persist = undefined, storage = undefined): Redux.Reducer {
     let mapper = {};
     for (let i in Controller.controllers) {
-      mapper[Controller.controllers[i].getId()] = Controller.controllers[i].getReducer();
+      // Allow persistance layer
+      if (persist && Controller.controllers[i].getPersistanceConfiguration(storage)) {
+        mapper[Controller.controllers[i].getId()] = persist(
+          Controller.controllers[i].getPersistanceConfiguration(storage),
+          Controller.controllers[i].getReducer()
+        );
+      } else {
+        mapper[Controller.controllers[i].getId()] = Controller.controllers[i].getReducer();
+      }
     }
     return Redux.combineReducers(mapper);
+  }
+
+  /**
+   * Prevent to store the _async information
+   * @param storage
+   */
+  getPersistanceConfiguration(storage): any {
+    return {
+      key: this.id,
+      storage: storage,
+      blacklist: ["_async"],
+    };
   }
 
   /**
@@ -129,24 +149,31 @@ export default class Controller {
    * Registering the listeners
    */
   protected init() {
-    let names = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(prop => {
-      return prop.startsWith("after");
-    });
-    if (!names.length) {
-      return true;
-    }
+    Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+      .filter((prop) => {
+        return prop.startsWith("after");
+      })
+      .forEach((name) => {
+        this.addListener(name, this);
+      });
+    return true;
+  }
+
+  /**
+   *
+   * @param name
+   * @param controller
+   */
+  addListener(name: string, controller: Controller) {
     if (!Controller.hasListener) {
       Controller.getStore().subscribe(Controller._actionListener);
       Controller.hasListener = true;
     }
-    names.forEach(name => {
-      if (!Controller.listenersMap[name]) {
-        Controller.listenersMap[name] = [this];
-      } else {
-        Controller.listenersMap[name].push(this);
-      }
-    });
-    return true;
+    if (!Controller.listenersMap[name]) {
+      Controller.listenersMap[name] = [this];
+    } else {
+      Controller.listenersMap[name].push(this);
+    }
   }
 
   _lastAction: any;
@@ -160,7 +187,7 @@ export default class Controller {
     if (!Controller.listenersMap[key]) {
       return;
     }
-    Controller.listenersMap[key].forEach(controller => {
+    Controller.listenersMap[key].forEach((controller) => {
       controller[key](Controller.lastAction);
     });
   }
@@ -242,13 +269,20 @@ export default class Controller {
    * @param name of the action like GET_USER
    * @param action any additional informations you want to pass
    * @param postActions callback to execute after the action
+   * @param postFailures callback to execute after the action failed
    */
-  protected asyncAction(name: string, action: any, postActions: (...args) => void = undefined) {
+  protected asyncAction(
+    name: string,
+    action: any,
+    postActions: (...args) => void = undefined,
+    postFailures: (...args) => void = undefined
+  ) {
     Controller.dispatch(async (dispatch, getState) => {
       let requestName = this.getRequestActionName(name);
       if (!this["on" + requestName]) {
-        this["on" + requestName] = state => {
+        this["on" + requestName] = (state) => {
           let obj = { ...state };
+          obj._async = obj._async || {};
           obj._async[requestName] = { syncing: true };
           return obj;
         };
@@ -260,28 +294,45 @@ export default class Controller {
         if (!this["on" + successName]) {
           this["on" + successName] = (state, actionInfo) => {
             let obj = { ...state, ...actionInfo.result };
+            obj._async = obj._async || {};
             obj._async[requestName] = { syncing: false };
             return obj;
           };
         }
         dispatch({ type: successName, asyncEnd: true, result: result });
       } catch (err) {
-        let errorName = this.getErrorActionName(name);
-        if (!this["on" + errorName]) {
-          this["on" + errorName] = (state, actionInfo) => {
-            let obj = { ...state };
-            obj._async[requestName] = { syncing: false, error: actionInfo.error };
-            return obj;
-          };
-        }
-        console.error(err);
-        dispatch({ type: errorName, asyncEnd: true, error: err });
-        return;
+        this.onAsyncActionError(name, requestName, dispatch, postFailures, err);
       }
       if (postActions) {
         postActions(dispatch, getState);
       }
     });
+  }
+
+  /**
+   *
+   * @param name of the action
+   * @param requestName request name stored in async
+   * @param dispatch dispatch function
+   * @param postFailures callback to execute after the action failed
+   * @param err error that occured
+   */
+  protected onAsyncActionError(name, requestName, dispatch, postFailures, err) {
+    let errorName = this.getErrorActionName(name);
+    if (!this["on" + errorName]) {
+      this["on" + errorName] = (state, actionInfo) => {
+        let obj = { ...state };
+        obj._async = obj._async || {};
+        obj._async[requestName] = { syncing: false, error: actionInfo.error };
+        return obj;
+      };
+    }
+    console.error(err);
+    dispatch({ type: errorName, asyncEnd: true, error: err });
+    if (postFailures) {
+      postFailures(err);
+    }
+    return;
   }
 
   /**
@@ -296,29 +347,41 @@ export default class Controller {
     url: string,
     method: string = "GET",
     body: any = undefined,
-    options: any = { credentials: "include" },
+    options: any = { credentials: "include", headers: {} },
     endpoint: string = Controller.endpoint
   ) {
     options.body = JSON.stringify(body);
     options.headers = {
-      "content-type": "application/json"
+      "content-type":
+        options.headers && options.headers["content-type"] ? options.headers["content-type"] : "application/json",
     };
     options.method = method;
-    return this.processResponse(await fetch(endpoint + url, options));
+    return this.processResponse(await fetch(endpoint + url, options), {
+      url: endpoint + url,
+      ...options,
+    });
+  }
+
+  /**
+   * Return an absolute url from relative path
+   * @param path
+   */
+  public static getUrl(path: string): string {
+    return Controller.endpoint + path;
   }
 
   /**
    * Parse response
    * @param response to parse
    */
-  processResponse(response: Response): any {
+  processResponse(response: Response, request: Request): any {
     if (response.status >= 400) {
       throw new HTTPError(response.status);
     }
     if (response.status === 204) {
       return {};
     }
-    if (response.status === 200) {
+    if (response.status === 200 && response.headers.get("content-type") === "application/json") {
       return response.json();
     }
     return response;
