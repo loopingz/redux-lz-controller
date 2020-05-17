@@ -327,7 +327,6 @@ export default class Controller {
         return obj;
       };
     }
-    console.error(err);
     dispatch({ type: errorName, asyncEnd: true, error: err });
     if (postFailures) {
       postFailures(err);
