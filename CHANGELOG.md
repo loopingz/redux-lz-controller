@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/loopingz/redux-lz-controller/compare/v1.1.1...v1.1.2) (2020-05-18)
+
+
+### Bug Fixes
+
+* getter should always return a Controller ([8a86f33](https://github.com/loopingz/redux-lz-controller/commit/8a86f33d8c84e4a8e868c74aedf6e64c13118a86))
+
 ### [1.1.1](https://github.com/loopingz/redux-lz-controller/compare/v1.1.0...v1.1.1) (2020-05-17)
 
 
