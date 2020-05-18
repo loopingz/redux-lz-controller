@@ -52,7 +52,7 @@ export default class Controller {
   /**
    * @param id get controller singleton
    */
-  public static get<T>(id: string): T {
+  public static get<T extends Controller>(id: string): T {
     return <T>Controller.controllers[id];
   }
 
