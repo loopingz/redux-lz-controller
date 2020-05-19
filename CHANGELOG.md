@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.3](https://github.com/loopingz/redux-lz-controller/compare/v1.1.2...v1.1.3) (2020-05-19)
+
+
+### Bug Fixes
+
+* headers passed in ajax are not used ([e393ab1](https://github.com/loopingz/redux-lz-controller/commit/e393ab18be821bebca6c52f1033d76d51b358f88))
+
 ### [1.1.2](https://github.com/loopingz/redux-lz-controller/compare/v1.1.1...v1.1.2) (2020-05-18)
 
 
