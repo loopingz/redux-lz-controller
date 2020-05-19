@@ -353,6 +353,7 @@ export default class Controller {
     options.headers = {
       "content-type":
         options.headers && options.headers["content-type"] ? options.headers["content-type"] : "application/json",
+      ...options.headers,
     };
     options.method = method;
     return this.processResponse(await fetch(endpoint + url, options), {
