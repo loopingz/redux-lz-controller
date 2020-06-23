@@ -349,7 +349,7 @@ export default class Controller {
     options: any = { credentials: "include", headers: {} },
     endpoint: string = Controller.endpoint
   ) {
-    options.body = JSON.stringify(body);
+    options.body = options.raw ? body : JSON.stringify(body);
     options.headers = {
       "content-type":
         options.headers && options.headers["content-type"] ? options.headers["content-type"] : "application/json",
