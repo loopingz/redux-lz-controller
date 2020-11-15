@@ -356,7 +356,12 @@ export default class Controller {
       ...options.headers,
     };
     options.method = method;
-    return this.processResponse(await fetch(endpoint + url, options), {
+    let finalUrl = url;
+    // If url are not absolute, append the endpoint
+    if (!finalUrl.startsWith("https://") && !finalUrl.startsWith("http://")) {
+      finalUrl = endpoint + url;
+    }
+    return this.processResponse(await fetch(finalUrl, options), {
       url: endpoint + url,
       ...options,
     });
