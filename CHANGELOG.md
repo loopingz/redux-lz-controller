@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/loopingz/redux-lz-controller/compare/v1.1.3...v1.3.0) (2020-11-15)
+
+
+### Features
+
+* add ability to use absolute url ([ba13ac5](https://github.com/loopingz/redux-lz-controller/commit/ba13ac57de72d61a97f636c0b29ec32255f8084a))
+* be able to bypass stringified body for raw content type ([decf577](https://github.com/loopingz/redux-lz-controller/commit/decf5771b59e8a1013fe5d0423d871a20174c4e8))
+
 ## [1.2.0](https://github.com/loopingz/redux-lz-controller/compare/v1.0.0...v1.2.0) (2020-06-23)
 
 
