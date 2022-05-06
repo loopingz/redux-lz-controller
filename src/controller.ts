@@ -7,8 +7,12 @@ export class HTTPError {
   }
 }
 
-export default class Controller {
-  defaultState: any = {};
+export interface AsyncState {
+  _async: any;
+}
+
+export default class Controller<T extends AsyncState = AsyncState> {
+  defaultState: T;
   id: string;
   protected static store: Redux.Store;
   protected static controllers: Map<string, Controller> = new Map();
@@ -23,7 +27,7 @@ export default class Controller {
    * @param id is the key that the controller manage in the state
    * @param defaultState default value of the state
    */
-  constructor(id: string, defaultState: any = {}) {
+  constructor(id: string, defaultState: T = <T>{}) {
     this.id = id;
     this.defaultState = { _async: {}, ...defaultState };
     Controller.controllers[id] = this;
@@ -81,7 +85,7 @@ export default class Controller {
   /**
    * Retrieve the Redux state manage by this controller
    */
-  protected getLocalState(): any {
+  protected getLocalState(): T {
     return Controller.store.getState()[this.id];
   }
 
@@ -281,10 +285,15 @@ export default class Controller {
       let requestName = this.getRequestActionName(name);
       if (!this["on" + requestName]) {
         this["on" + requestName] = (state) => {
-          let obj = { ...state };
-          obj._async = obj._async || {};
-          obj._async[requestName] = { syncing: true };
-          return obj;
+          return {
+            ...state,
+            _async: {
+              ...state._async,
+              [requestName]: {
+                syncing: true,
+              },
+            },
+          };
         };
       }
       dispatch({ type: requestName, asyncStart: true });
@@ -293,10 +302,16 @@ export default class Controller {
         let result = await action(dispatch, getState);
         if (!this["on" + successName]) {
           this["on" + successName] = (state, actionInfo) => {
-            let obj = { ...state, ...actionInfo.result };
-            obj._async = obj._async || {};
-            obj._async[requestName] = { syncing: false };
-            return obj;
+            return {
+              ...state,
+              _async: {
+                ...state._async,
+                [requestName]: {
+                  syncing: false,
+                },
+              },
+              ...actionInfo.result,
+            };
           };
         }
         dispatch({ type: successName, asyncEnd: true, result: result });
@@ -318,13 +333,22 @@ export default class Controller {
    * @param err error that occured
    */
   protected onAsyncActionError(name, requestName, dispatch, postFailures, err) {
+    if (err instanceof TypeError) {
+      err = "NETWORK_ERROR";
+    }
     let errorName = this.getErrorActionName(name);
     if (!this["on" + errorName]) {
       this["on" + errorName] = (state, actionInfo) => {
-        let obj = { ...state };
-        obj._async = obj._async || {};
-        obj._async[requestName] = { syncing: false, error: actionInfo.error };
-        return obj;
+        return {
+          ...state,
+          _async: {
+            ...state._async,
+            [requestName]: {
+              syncing: false,
+              error: actionInfo,
+            },
+          },
+        };
       };
     }
     dispatch({ type: errorName, asyncEnd: true, error: err });

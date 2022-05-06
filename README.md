@@ -1,5 +1,10 @@
 # redux-lz-controller
 
+[![CodeQL](https://github.com/loopingz/redux-lz-controller/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/loopingz/redux-lz-controller/actions/workflows/codeql-analysis.yml)
+[![Node.js CI](https://github.com/loopingz/redux-lz-controller/actions/workflows/node.js.yml/badge.svg)](https://github.com/loopingz/redux-lz-controller/actions/workflows/node.js.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=redux-lz-controller&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=redux-lz-controller)
+
+
 Regrouping action and reducer into a controller
 
 ## Installation
@@ -148,3 +153,10 @@ const App = () => {
 
 export default App;
 ```
+
+
+## Troubleshoot
+
+### Action are visible but state is not updated
+
+This is more likely because you did not register the Controller middleware
