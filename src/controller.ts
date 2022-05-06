@@ -27,9 +27,9 @@ export default class Controller<T extends AsyncState = AsyncState> {
    * @param id is the key that the controller manage in the state
    * @param defaultState default value of the state
    */
-  constructor(id: string, defaultState: T = <T>{}) {
+  constructor(id: string, defaultState: Partial<T> = <T>{}) {
     this.id = id;
-    this.defaultState = { _async: {}, ...defaultState };
+    this.defaultState = <T>{ _async: {}, ...defaultState };
     Controller.controllers[id] = this;
   }
 

@@ -3,7 +3,7 @@ import * as fetchMock from "fetch-mock";
 import { suite, test } from "mocha-typescript";
 import * as Redux from "redux";
 import thunk from "redux-thunk";
-import { Controller } from "./controller";
+import { AsyncState, Controller } from "./controller";
 
 function promiseState(p) {
   const t = {};
@@ -13,7 +13,11 @@ function promiseState(p) {
   );
 }
 
-class TestController extends Controller {
+export interface TestState extends AsyncState {
+  someInfos: boolean;
+}
+
+class TestController extends Controller<TestState> {
   onAsyncSuccess: boolean = false;
   onAsyncFailed: boolean = false;
   constructor() {
