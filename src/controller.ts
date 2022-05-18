@@ -345,7 +345,7 @@ export default class Controller<T extends AsyncState = AsyncState> {
             ...state._async,
             [requestName]: {
               syncing: false,
-              error: actionInfo,
+              error: actionInfo.error,
             },
           },
         };
