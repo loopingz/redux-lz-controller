@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/loopingz/redux-lz-controller/compare/v1.3.0...v1.4.0) (2023-05-09)
+
+
+### Features
+
+* add debounce system ([01d3634](https://github.com/loopingz/redux-lz-controller/commit/01d36347cdfb1127d2ec6d966056bd103356134c))
+* add Templatize local state ([4e155d4](https://github.com/loopingz/redux-lz-controller/commit/4e155d432c4e8bcc56f3bb739d14d982365b6ad6))
+
 ## [1.3.0](https://github.com/loopingz/redux-lz-controller/compare/v1.1.3...v1.3.0) (2020-11-15)
 
 
