@@ -22,6 +22,8 @@ export default class Controller<T extends AsyncState = AsyncState> {
   protected static lastAction: any;
   protected _init: boolean = false;
   protected _initPromises: any[] = [];
+  debounceTimeouts: any;
+  debounceValue: number = 500;
 
   /**
    * @param id is the key that the controller manage in the state
@@ -253,6 +255,20 @@ export default class Controller<T extends AsyncState = AsyncState> {
    */
   getErrorActionName(name) {
     return name + "_FAILED";
+  }
+
+  protected debounce(
+    name: string,
+    action: any,
+    postActions: (...args) => void = undefined,
+    postFailures: (...args) => void = undefined
+  ) {
+    if (this.debounceTimeouts[name]) {
+      clearTimeout(this.debounceTimeouts[name]);
+    }
+    this.debounceTimeouts[name] = setTimeout(() => {
+      this.asyncAction(name, action, postActions, postFailures);
+    }, this.debounceValue);
   }
 
   /**
